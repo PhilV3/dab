@@ -1,0 +1,278 @@
+create schema app;
+
+alter schema app owner to s3iprojet00;
+
+create table if not exists ap
+(
+	ap_id char(6) not null
+		constraint prk_constraint_ap
+			primary key,
+	libelle text not null,
+	inscription timestamp not null
+);
+
+alter table ap owner to s3iprojet00;
+
+create table if not exists app
+(
+	app_id char(5) not null
+		constraint prk_constraint_app
+			primary key,
+	libelle text not null,
+	inscription timestamp not null
+);
+
+alter table app owner to s3iprojet00;
+
+create table if not exists ap_app
+(
+	ap_id char(6) not null
+		constraint fk_ap_app_ap_id
+			references ap,
+	app_id char(5) not null
+		constraint fk_ap_app_app_id
+			references app,
+	constraint prk_constraint_ap_app
+		primary key (ap_id, app_id)
+);
+
+alter table ap_app owner to s3iprojet00;
+
+create table if not exists etudiant_app
+(
+	etudiant_app_id serial not null
+		constraint prk_constraint_etudiant_app
+			primary key,
+	cip text,
+	nom text,
+	courriel text,
+	programme text,
+	programme_nom text,
+	app text,
+	app_titre text,
+	ap text,
+	departement text,
+	faculte text,
+	universite text
+);
+
+alter table etudiant_app owner to s3iprojet00;
+
+create table if not exists trimestre
+(
+	trimestre_id varchar(3),
+	trimestre varchar(4096),
+	debut date,
+	fin date,
+	inscription timestamp with time zone default now()
+);
+
+alter table trimestre owner to s3iprojet00;
+
+create table if not exists universite
+(
+	universite_id serial not null
+		constraint prk_constraint_universite
+			primary key,
+	libelle text not null,
+	inscription timestamp not null
+);
+
+alter table universite owner to s3iprojet00;
+
+create table if not exists faculte
+(
+	faculte_id serial not null
+		constraint prk_constraint_faculte
+			primary key,
+	libelle text not null,
+	inscription timestamp not null,
+	universite_id integer not null
+		constraint fk_faculte_universite_id
+			references universite
+);
+
+alter table faculte owner to s3iprojet00;
+
+create table if not exists departement
+(
+	departement_id serial not null
+		constraint prk_constraint_departement
+			primary key,
+	libelle text not null,
+	inscription timestamp not null,
+	faculte_id integer not null
+		constraint fk_departement_faculte_id
+			references faculte
+);
+
+alter table departement owner to s3iprojet00;
+
+create table if not exists programme
+(
+	programme_id char(3) not null
+		constraint prk_constraint_programme
+			primary key,
+	libelle text not null,
+	inscription timestamp not null,
+	departement_id integer
+		constraint fk_programme_departement_id
+			references departement,
+	faculte_id char(2) not null
+);
+
+alter table programme owner to s3iprojet00;
+
+create table if not exists ap_cheminement
+(
+	cheminement_id char(3) not null,
+	programme_id char(3) not null
+		constraint fk_ap_cheminement_programme_id
+			references programme,
+	ap_id char(6) not null
+		constraint fk_ap_cheminement_ap_id
+			references ap,
+	constraint prk_constraint_ap_cheminement
+		primary key (cheminement_id, programme_id, ap_id)
+);
+
+alter table ap_cheminement owner to s3iprojet00;
+
+create table if not exists ap_version
+(
+	fonction char,
+	version_id char(2) not null,
+	cheminement_id char(3) not null,
+	programme_id char(3) not null
+		constraint fk_ap_version_programme_id
+			references programme,
+	ap_id char(6) not null
+		constraint fk_ap_version_ap_id
+			references ap,
+	constraint prk_constraint_ap_version
+		primary key (version_id, cheminement_id, programme_id, ap_id)
+);
+
+alter table ap_version owner to s3iprojet00;
+
+create table if not exists cheminement
+(
+	cheminement_id char(3) not null,
+	libelle text not null,
+	inscription timestamp not null,
+	programme_id char(3) not null
+		constraint fk_cheminement_programme_id
+			references programme,
+	constraint prk_constraint_cheminement
+		primary key (cheminement_id, programme_id)
+);
+
+alter table cheminement owner to s3iprojet00;
+
+create table if not exists etudiant
+(
+	cip char(8) not null
+		constraint prk_constraint_etudiant
+			primary key,
+	nom text,
+	courriel text,
+	inscription timestamp,
+	programme_id char(3)
+		constraint fk_etudiant_programme_id
+			references programme
+);
+
+alter table etudiant owner to s3iprojet00;
+
+create table if not exists ap_etudiant
+(
+	ap_id char(6) not null
+		constraint fk_ap_etudiant_ap_id
+			references ap,
+	cip char(8) not null
+		constraint fk_ap_etudiant_cip
+			references etudiant,
+	constraint prk_constraint_ap_etudiant
+		primary key (ap_id, cip)
+);
+
+alter table ap_etudiant owner to s3iprojet00;
+
+create table if not exists version
+(
+	version_id char(2) not null,
+	libelle text not null,
+	inscription timestamp,
+	cheminement_id char(3) not null,
+	programme_id char(3) not null
+		constraint fk_version_programme_id
+			references programme,
+	constraint prk_constraint_version
+		primary key (version_id, cheminement_id, programme_id)
+);
+
+alter table version owner to s3iprojet00;
+
+create table if not exists classe
+(
+	ap_id varchar(10),
+	competence_id integer,
+	controle_id integer,
+	groupe_id varchar(3),
+	inscription varchar(32),
+	libelle varchar(256),
+	ordre integer,
+	ponderation integer,
+	profil_id varchar(7),
+	trimestre_id varchar(4)
+);
+
+alter table classe owner to s3iprojet00;
+
+create table if not exists control_notes
+(
+	ap_id varchar(10),
+	cip_etudiant varchar(8),
+	cip_inscripteur varchar(8),
+	commentaire varchar(512),
+	competence_id integer,
+	controle_id integer,
+	critere_id varchar(2),
+	etat varchar(2),
+	groupe_id varchar(3),
+	inscription varchar(32),
+	note integer,
+	ponderation integer
+);
+
+alter table control_notes owner to s3iprojet00;
+
+create or replace view v_etudiant_app(etudiant_app_id, cip, nom, courriel, programme, programme_nom, app, app_titre, ap, departement, faculte, universite) as
+SELECT etudiant_app.etudiant_app_id,
+       etudiant_app.cip,
+       etudiant_app.nom,
+       etudiant_app.courriel,
+       etudiant_app.programme,
+       etudiant_app.programme_nom,
+       etudiant_app.app,
+       etudiant_app.app_titre,
+       etudiant_app.ap,
+       etudiant_app.departement,
+       etudiant_app.faculte,
+       etudiant_app.universite
+FROM app.etudiant_app;
+
+alter table v_etudiant_app owner to s3iprojet00;
+
+CREATE RULE del_etudiant_app AS
+    ON UPDATE TO app.v_etudiant_app DO INSTEAD  DELETE FROM app.etudiant_app
+  WHERE etudiant_app.etudiant_app_id = old.etudiant_app_id;
+
+CREATE RULE ins_etudiant_app AS
+    ON INSERT TO app.v_etudiant_app DO INSTEAD  INSERT INTO app.etudiant_app (etudiant_app_id, cip, nom, courriel, programme, programme_nom, app, app_titre, ap, departement, faculte, universite)
+  VALUES (new.etudiant_app_id, new.cip, new.nom, new.courriel, new.programme, new.programme_nom, new.app, new.app_titre, new.ap, new.departement, new.faculte, new.universite);
+
+CREATE RULE upd_etudiant_app AS
+    ON UPDATE TO app.v_etudiant_app DO INSTEAD  UPDATE app.etudiant_app SET cip = new.cip, nom = new.nom, courriel = new.courriel, programme = new.programme, programme_nom = new.programme_nom, app = new.app, app_titre = new.app_titre, ap = new.ap, departement = new.departement, faculte = new.faculte, universite = new.universite
+  WHERE etudiant_app.etudiant_app_id = new.etudiant_app_id;
+
